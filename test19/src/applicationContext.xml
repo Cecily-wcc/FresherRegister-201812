@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+	
+	<!-- 扫描service注解 -->
+	<context:component-scan base-package="com.service"></context:component-scan>
+	
+	<!-- 设置忽视标签 直接扫描并传递properties  
+	Set to "true" to allow the configurer to pass on the key to any others in the context that 
+    have not yet visited the key in question.
+	-->
+	<context:property-placeholder location="classpath:db.properties" ignore-unresolvable="true"/>
+	
+	<!-- 数据源 classNofFound异常可检查jar下是否含类 解决办法勾选引入spring JDBC -->
+	<!-- 此处因org.commons.dbcp可能引发SQLExpetion:no suitable driver异常 故替换spring自带datasource包-->
+	<bean id="datasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	
+	<!-- 建立会话 并配置会话配置文件路径 异常可检查包和path下是否含有配置文件 或 配置文件中DOCTYPE类型是否配置正确  -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="datasource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath*:com/dao/*.xml"></property>
+		
+	</bean>
+	
+	<!-- 扫描ScannerConfigurer -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.dao" />
+	</bean>
+
+</beans>
